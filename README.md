@@ -1,88 +1,63 @@
-**Olist Store E-commerce Data Analysis (MySQL Focus)**
-🌟 **Project Overview**
-This project focuses on analyzing the Olist Brazilian e-commerce dataset using SQL to extract meaningful business insights related to sales, customer behavior, payments, delivery performance, and reviews.
-The objective is to answer real-world business questions that help stakeholders understand:
-Customer purchasing patterns
-Revenue distribution across regions
-Payment preferences
-Delivery efficiency
-Impact of delivery time on customer reviews
+ **🛒 E-commerce Data Analysis (Olist Dataset)**
 
-🗂️**Dataset Description**
-The project uses the Olist public dataset, which contains multiple relational tables:
-olist_orders_dataset
-olist_customers_dataset
-olist_order_items_dataset
-olist_order_payments_dataset
-olist_order_reviews_dataset
-olist_products_dataset
-These tables are joined using primary and foreign keys such as order_id, customer_id, and product_id.
+📌 **Problem Statement**
+E-commerce businesses need insights into customer behavior, sales performance, and delivery efficiency to improve decision-making.
 
-🛠️**Tools & Technologies**
-SQL (MySQL)
-Joins (INNER JOIN)
-Aggregate functions (SUM, AVG, COUNT)
-Date functions (DATEDIFF, DAYOFWEEK, STR_TO_DATE)
-Grouping & filtering
-Business KPIs & metrics
+## 💡 Objective
+Analyze transactional data to identify trends in sales, customer activity, product performance, and delivery timelines.
 
-📊 **Key Business Questions Answered**
-1️⃣ Weekday vs Weekend Payment Statistics
-Categorized orders into Weekday and Weekend
-Compared:
-Total payment value
-Total number of orders
-Helps understand customer purchasing behavior by day type
+## 🛠 Tools Used
+- SQL
 
-2️⃣ Orders with 5-Star Reviews Paid by Credit Card
-Identified highly satisfied customers
-Filtered orders with:
-Review score = 5
-Payment type = Credit Card
-Useful for customer satisfaction & payment preference analysis
+## 📊 Key Analysis Performed
+- Total sales and revenue trends
+- Top-performing products and categories
+- Customer distribution and behavior
+- Order delivery performance and delays
+- Payment analysis
 
-3️⃣ Average Delivery Days for Pet Shop Category
-Calculated average delivery time for Pet Shop products
-Helps assess logistics efficiency for specific product categories
+## 🔍 Key Insights
+- Identified top revenue-generating product categories
+- Found regions with highest customer activity
+- Analyzed delivery delays impacting customer satisfaction
+- Observed seasonal trends in order volume
 
-4️⃣ Average Price & Payment Value (São Paulo Customers)
-Focused on customers from São Paulo city
-Calculated:
-Average product price
-Average payment value
-Useful for city-level revenue analysis
+## 🧠 Sample SQL **Queries
+**Total Orders**
+ SELECT 
+    COUNT(DISTINCT order_id) AS Total_Orders
+FROM olist_orders_dataset;
 
-5️⃣ Relationship Between Shipping Days & Review Scores
-Analyzed how delivery time impacts customer reviews
-Calculated average shipping days per review score
-Supports insights into customer experience and logistics performance
+ **Average Order Value**
+SELECT 
+    ROUND(SUM(payment_value) / COUNT(DISTINCT order_id), 2) AS Avg_Order_Value
+FROM olist_order_payments_dataset;
 
-6️⃣ Total Number of Orders
-Counted distinct orders across the dataset
-Serves as a core business KPI
+**Weekday vs Weekend (order_purchase_timestamp) Payment Statistics**
+SELECT 
+    CASE 
+        WHEN DAYOFWEEK(STR_TO_DATE(order_purchase_timestamp, '%d-%m-%Y')) IN (1,7) THEN 'Weekend'
+        ELSE 'Weekday'
+    END AS Day_Type,
+    ROUND(SUM(payment_value),2) AS Total_Payment,
+    COUNT(DISTINCT o.order_id) AS Total_Orders
+FROM olist_orders_dataset AS o
+JOIN olist_order_payments_dataset AS p
+    ON o.order_id = p.order_id
+GROUP BY Day_Type
+ORDER BY Day_Type;
 
-7️⃣ Average Order Value (AOV)
-Calculated as:
-Total Payment Value / Total Orders
-A key metric used in e-commerce performance tracking
-
-8️⃣ Top 5 States by Sales
-Identified the top-performing states based on total sales
-Useful for regional sales strategy and expansion planning
-
-📈**Key Insights**
-Weekend orders contribute significantly to total payment value.
-Faster deliveries generally lead to higher review scores.
-Credit card payments dominate among highly satisfied customers.
-São Paulo is a major contributor to revenue.
-Certain product categories experience longer delivery times.
-
-✅**Conclusion**
-This project demonstrates how SQL can be effectively used to analyze real-world e-commerce data and convert raw transactional records into actionable business insights. By working with the Olist dataset, multiple relational tables were joined to answer practical questions related to sales performance, customer behavior, payment preferences, delivery efficiency, and customer satisfaction.
-The analysis highlights that:
-Delivery time has a strong impact on customer review scores, emphasizing the importance of efficient logistics.
-Credit cards are the most preferred payment method among highly satisfied customers.
-Weekday and weekend purchasing behaviors differ, which can help businesses optimize marketing and operational strategies.
-Regional analysis shows that certain states and cities contribute significantly to overall revenue.
-Product-category–based delivery insights help identify areas for logistics improvement.
-Overall, this project reflects a structured analytical approach, strong understanding of SQL joins, aggregations, and date functions, and the ability to translate data into meaningful insights for decision-making.
+**Relationship Between Shipping Days & Review Scores**
+SELECT 
+    r.review_score,
+    ROUND(AVG(DATEDIFF(
+        STR_TO_DATE(o.order_delivered_customer_date, '%Y-%m-%d'),
+        STR_TO_DATE(o.order_purchase_timestamp, '%Y-%m-%d')
+    )), 2) AS Avg_Shipping_Days
+FROM olist_orders_dataset AS o
+JOIN olist_order_reviews_dataset AS r 
+    ON o.order_id = r.order_id
+WHERE o.order_delivered_customer_date IS NOT NULL
+  AND o.order_purchase_timestamp IS NOT NULL
+GROUP BY r.review_score
+ORDER BY r.review_score;
