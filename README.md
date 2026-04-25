@@ -22,8 +22,9 @@ Analyze transactional data to identify trends in sales, customer activity, produ
 - Analyzed delivery delays impacting customer satisfaction
 - Observed seasonal trends in order volume
 
-## 🧠 Sample SQL **Queries
+## 🧠 Sample SQL Queries
 **Total Orders**
+'''sql
  SELECT 
     COUNT(DISTINCT order_id) AS Total_Orders
 FROM olist_orders_dataset;
